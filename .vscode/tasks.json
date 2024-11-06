@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "command": "cargo run -- new fiskur",
+      "group": "build",
+      "label": "create project"
+    },
+    {
+      "type": "shell",
+      "command": "../target/debug/fiskur build fiskur",
+      "group": "build",
+      "label": "run compiler",
+      "options": {
+        "cwd": "${workspaceFolder}/fiskur"
+      }
+    }
+  ]
+}
