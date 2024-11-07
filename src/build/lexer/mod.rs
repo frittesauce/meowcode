@@ -1,4 +1,4 @@
-use std::process::id;
+use std::{process::id, string};
 
 pub mod token;
 
@@ -15,6 +15,10 @@ fn is_letter(ch: char) -> bool {
 
 fn is_digit(ch: char) -> bool {
     '0' <= ch && ch <= '9'
+}
+
+fn is_string(ch: char) -> bool {
+    ch != '\"'
 }
 
 impl Lexer {
@@ -52,15 +56,27 @@ impl Lexer {
             l.input[position..l.position].to_vec()
         };
 
-        let read_string = |l: &mut Lexer | -> Vec<char> {
-          let position = l.
-        }
+        let read_string = |l: &mut Lexer| -> Vec<char> {
+            l.read_char();
+            let position = l.position;
+
+            while l.position < l.input.len() && is_string(l.ch) {
+                l.read_char();
+            }
+
+            let final_position = l.position;
+
+            l.read_char();
+
+            l.input[position..final_position].to_vec()
+        };
 
         let read_number = |l: &mut Lexer| -> Vec<char> {
             let position = l.position;
             while l.position < l.input.len() && is_digit(l.ch) {
                 l.read_char();
             }
+
             l.input[position..l.position].to_vec()
         };
 
@@ -85,26 +101,28 @@ impl Lexer {
             ';' => {
                 tok = token::Token::SemiColon;
             }
+            '"' => {
+                let string: String = read_string(self).into_iter().collect();
+
+                return token::Token::String(string);
+            }
             '0' => {
                 tok = token::Token::EndOfFile;
             }
             _ => {
-                if self.ch == '"' {
-                  
-                }
-                else if is_letter(self.ch) {
+                if is_letter(self.ch) {
                     let ident: Vec<char> = read_identifier(self);
                     match token::get_keyword_token(&ident) {
                         Ok(keyword_token) => {
                             return keyword_token;
                         }
                         Err(_err) => {
-                            return token::Token::Identifier(ident);
+                            return token::Token::Identifier(ident.iter().collect());
                         }
                     }
                 } else if is_digit(self.ch) {
                     let ident: Vec<char> = read_number(self);
-                    return token::Token::Int(ident);
+                    return token::Token::Int(ident.iter().collect());
                 } else {
                     return token::Token::Illegal;
                 }
