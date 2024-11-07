@@ -2,3 +2,6 @@
 name = "fiskur"
 version = "0.1.0"
 edition = "2025"
+
+[config]
+main = "src/main.kty"

@@ -1,5 +1,3 @@
-use std::{process::id, string};
-
 pub mod token;
 
 pub struct Lexer {
@@ -100,6 +98,15 @@ impl Lexer {
             }
             ';' => {
                 tok = token::Token::SemiColon;
+            }
+            '+' => {
+                tok = token::Token::Plus;
+            }
+            '-' => {
+                tok = token::Token::Minus;
+            }
+            '!' => {
+                tok = token::Token::Bang;
             }
             '"' => {
                 let string: String = read_string(self).into_iter().collect();

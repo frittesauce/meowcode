@@ -5,8 +5,8 @@ fn main() {
     chirp("Hello World");
 
     if (meow == woof) {
-        chirp(false)
+        chirp(false);
     } else {
-        chirp("skibidi skiidi on the wall whos the skibidies of them all")
+        chirp("skibidi skiidi on the wall whos the skibidies of them all");
     }
 }
