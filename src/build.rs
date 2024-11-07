@@ -1,5 +1,4 @@
 mod lexer;
-use lexer::lexer;
 
 use std::{fs, path::PathBuf};
 
@@ -10,5 +9,16 @@ pub fn build() {
         .expect("Should have been able to read the file");
 
     println!("{}", content);
-    lexer(content);
+
+    let mut l = lexer::Lexer::new(content.chars().collect());
+    l.read_char();
+    loop {
+        let token = l.next_token();
+        if token == lexer::token::Token::EndOfFile {
+            break;
+        } else {
+            println!("{:?}", token);
+        }
+    }
+    println!("{} {} {}", char::from(l.ch), l.position, l.read_position);
 }

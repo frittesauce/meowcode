@@ -1,3 +1,10 @@
 fn main() {
-	chirp("Hello World!!!");
+	let meow = 1;
+	let woof = 2;
+
+	chirp(Hello World);
+
+	if ( meow == woof ) {
+		chirp(false)
+	}
 }
