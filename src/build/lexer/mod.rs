@@ -94,7 +94,7 @@ impl Lexer {
                 tok = token::Token::CloseParamn;
             }
             '=' => {
-                tok = token::Token::Assign;
+                tok = token::Token::Equals;
             }
             ';' => {
                 tok = token::Token::SemiColon;
