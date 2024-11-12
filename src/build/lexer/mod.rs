@@ -119,6 +119,9 @@ impl Lexer {
 
                 return token::Token::String(string);
             }
+            ',' => {
+                tok = token::Token::Comma;
+            }
             '0' => {
                 tok = token::Token::EndOfFile;
             }

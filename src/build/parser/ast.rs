@@ -7,9 +7,6 @@ pub enum Expr {
 
     UnaryOp(Box<Expr>, UnaryOperator, Box<Expr>),
 
-    Call(String, Vec<Expr>),
-
-    Asignment(String, Box<Expr>)
 
     
 }
@@ -31,13 +28,12 @@ pub enum UnaryOperator{
 
 #[derive(Debug)]
 pub enum Statement {
-    ExpressionStmt(Expr),
-    VariableDeclaration(String, Option<Expr>),
     AsigmentStmt(String, Expr),
     ReturnStmt(Expr),
     IfStmt(Box<Expr>, Box<Statement>, Option<Box<Statement>>),
     FunctionDecl(String, Vec<Statement>, Vec<Box<Statement>>),
-    VariableDecl(String, Option<Expr>)
+    VariableDecl(String, Option<Expr>),
+    Call(String, Vec<Expr>),
 }
 
 

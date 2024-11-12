@@ -58,7 +58,6 @@ pub fn build() {
 }
 
 fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
-    println!("skibidi");
 
     let mut cur_token = parser.read_token();
 
@@ -74,7 +73,7 @@ fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
     match cur_token {
         Token::OpenParamn => {},
         _ => {
-            panic!("function not valid")
+            panic!("function missing params")
         }
     }
 
@@ -94,40 +93,100 @@ fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
                 }
             }
         } else {
-            cur_token = parser.read_token();
+            parser.read_token();
             break;
         }
     }
 
 
     let mut statements: Vec<Box<parser::ast::Statement>> = vec![];
+    cur_token = parser.read_token();
 
     loop {
         if cur_token != Token::EndScope {
-            match cur_token {
+            match &cur_token {
                 Token::Let => {
                     let statement = decl_var(parser);
                     statements.push(Box::new(statement));
                     cur_token = parser.read_token();
                 }
-                _ => {
-                    cur_token = parser.read_token();
-                    println!("syntax error somewer?!");
+                Token::Identifier(string) => {
+                    let statement = decl_call(parser, string.to_string());
+                    statements.push(Box::new(statement));
                 }
+                Token::SemiColon => {
+                    cur_token = parser.read_token();
+                }
+                _ => {
+                    println!("syntax error somewer?! {:?}", cur_token);
+                    cur_token = parser.read_token();
+                }
+            }               
+            if cur_token != Token::SemiColon {
+                println!("stupid stupid supid forgot semicolon");
+                cur_token = parser.read_token();
+            } else {
+                cur_token = parser.read_token();
             }
+
         } else {
+            parser.read_token();
             break;
+
         }
     }
 
     return parser::ast::Statement::FunctionDecl(fn_name, params, statements);
 }
 
-// fn decl_statement(parser: parser::Parser) -> parser::ast::Statement {
+fn decl_call(parser: &mut parser::Parser, string: String) -> parser::ast::Statement {
+    let name = string;
+    
+    let mut token = parser.read_token();
+    let statement: parser::ast::Statement;
 
-// }
-//
-//
+    match token {
+        Token::OpenParamn => {
+            let mut params: Vec<parser::ast::Expr>= vec![];
+            loop {
+                if token == Token::CloseParamn {
+                    parser.read_token();
+                    break;
+                } else {
+                    let expr = decl_expr(parser);
+                    params.push(expr);
+                    token = parser.read_token();
+                }
+            }
+            statement = parser::ast::Statement::Call(name, params);
+        }
+        _ => {
+        panic!("syntax error at {}", name);
+    }
+    }
+    
+    return statement
+}
+
+fn decl_expr(parser: &mut parser::Parser) -> parser::ast::Expr {
+    let token = parser.read_token();
+    match token {
+        Token::String(string) => {
+            return parser::ast::Expr::String(string);
+        }
+        Token::Int(int) => {
+            return parser::ast::Expr::Integer(int);
+        }
+        _ => {
+            panic!("expressions are wrong somewhere")
+        }
+
+    }
+}
+
+//fn decl_statement(parser: &mut parser::Parser) -> parser::ast::Statement {
+//    println!("woof")
+//}
 
 fn decl_var(parser: &mut parser::Parser) -> parser::ast::Statement {
     let mut token = parser.read_token();
@@ -144,7 +203,7 @@ fn decl_var(parser: &mut parser::Parser) -> parser::ast::Statement {
             panic!("not a valid variable name!");
         }
     };
-   
+
     if token == Token::Equals {
         token = parser.read_token();    
         match token {
@@ -162,6 +221,6 @@ fn decl_var(parser: &mut parser::Parser) -> parser::ast::Statement {
     } else {
         return parser::ast::Statement::VariableDecl(var_name, None);
     }
-    
+
 
 }

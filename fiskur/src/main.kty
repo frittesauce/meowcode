@@ -1,12 +1,7 @@
 fn main(test) {
     let meow = 1;
-    let woof = 2;
+    let woof = "woof";
 
-    chirp("Hello World");
+    chirp("Hello World", "woof");
 
-    if (meow == woof) {
-        chirp(false);
-    } else {
-        chirp("skibidi skiidi on the wall whos the skibidies of them all");
-    }
 }

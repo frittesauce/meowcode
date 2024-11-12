@@ -23,6 +23,7 @@ pub enum Token {
     If,
     Else,
     Return,
+    Comma,
 }
 
 pub fn get_keyword_token(ident: &Vec<char>) -> Result<Token, String> {
