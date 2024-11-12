@@ -2,6 +2,14 @@ fn main(test) {
     let meow = 1;
     let woof = "woof";
 
+    meow = 232;
+
     chirp("Hello World", "woof");
 
+
+    if (meow == woof) {
+        chirp(false);
+    } else {
+        chirp("skibidi skiidi on the wall whos the skibidies of them all");
+    }
 }

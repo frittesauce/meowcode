@@ -4,6 +4,7 @@ mod parser;
 use core::panic;
 use std::{fs, path::PathBuf};
 use lexer::token::Token;
+use parser::Parser;
 
 
 pub fn build() {
@@ -106,6 +107,7 @@ fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
         if cur_token != Token::EndScope {
             match &cur_token {
                 Token::Let => {
+                    println!("woof");
                     let statement = decl_var(parser);
                     statements.push(Box::new(statement));
                     cur_token = parser.read_token();
@@ -113,6 +115,7 @@ fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
                 Token::Identifier(string) => {
                     let statement = decl_call(parser, string.to_string());
                     statements.push(Box::new(statement));
+                    cur_token = parser.read_token();
                 }
                 Token::SemiColon => {
                     cur_token = parser.read_token();
@@ -123,7 +126,7 @@ fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
                 }
             }               
             if cur_token != Token::SemiColon {
-                println!("stupid stupid supid forgot semicolon");
+                println!("stupid stupid supid forgot semicolon {:?} statements {:#?}", cur_token, statements);
                 cur_token = parser.read_token();
             } else {
                 cur_token = parser.read_token();
@@ -150,7 +153,6 @@ fn decl_call(parser: &mut parser::Parser, string: String) -> parser::ast::Statem
             let mut params: Vec<parser::ast::Expr>= vec![];
             loop {
                 if token == Token::CloseParamn {
-                    parser.read_token();
                     break;
                 } else {
                     let expr = decl_expr(parser);
@@ -159,6 +161,10 @@ fn decl_call(parser: &mut parser::Parser, string: String) -> parser::ast::Statem
                 }
             }
             statement = parser::ast::Statement::Call(name, params);
+        }
+        Token::Equals => {
+            let expr = decl_expr(parser);
+            statement = parser::ast::Statement::AsigmentStmt(name, expr);
         }
         _ => {
         panic!("syntax error at {}", name);
