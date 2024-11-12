@@ -10,6 +10,8 @@ pub enum Expr {
     Call(String, Vec<Expr>),
 
     Asignment(String, Box<Expr>)
+
+    
 }
 
 #[derive(Debug)]
@@ -34,16 +36,12 @@ pub enum Statement {
     AsigmentStmt(String, Expr),
     ReturnStmt(Expr),
     IfStmt(Box<Expr>, Box<Statement>, Option<Box<Statement>>),
-}
-
-#[derive(Debug)]
-pub enum Decleration {
-    FunctionDecl(String, Vec<Expr>, Box<Statement>),
+    FunctionDecl(String, Vec<Statement>, Vec<Box<Statement>>),
     VariableDecl(String, Option<Expr>)
 }
+
 
 #[derive(Debug)]
 pub enum Program {
     Statements(Vec<Statement>),
-    Declarations(Vec<Decleration>),
 }

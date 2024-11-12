@@ -1,4 +1,4 @@
-fn main() {
+fn main(test) {
     let meow = 1;
     let woof = 2;
 
