@@ -1,23 +1,26 @@
 pub mod ast;
 
-use crate::build::lexer::token::Token;
+use std::{iter::Peekable, vec::IntoIter};
 
-pub fn parser(tokens_vec: Vec<Token>) {
-    println!("parsing with tokens: {:?}", tokens_vec);
-   
-    for token in tokens_vec.iter() {
-        println!("{:?}", token);
-    }
-    syntax_analyzer(tokens_vec);
+use crate::{build::lexer::token::{self, Token}, new::new};
+
+pub struct Parser {
+    tokens: Peekable<IntoIter<Token>>,
 }
 
+impl Parser {
+    pub fn new(token_vec: Vec<Token>) -> Self {
+        println!("Parsing code with tokens: \n {:#? \n}", token_vec);
+        Self {
+            tokens: token_vec.into_iter().peekable(),
+        }
+    }
+   
+    pub fn peek(&mut self) -> &Token{
+        self.tokens.peek().unwrap()
+    }
 
-pub fn syntax_analyzer(tokens_vec: Vec<Token>) {
-    println!("analyzing syntax with tokens");
-    let program: ast::Program;
-    let mut statements: Vec<ast::Statement> = vec![];
-    let var_name = "meow";
-    statements.push(ast::Statement::ReturnStmt(ast::Expr::String(var_name.to_owned())));
-    program = ast::Program::Statements(statements);
-    println!("{:?} {:?}", program, tokens_vec);
+    pub fn read_token(&mut self) -> Token{
+        self.tokens.next().unwrap()
+    }
 }

@@ -34,12 +34,11 @@ pub enum Statement {
     AsigmentStmt(String, Expr),
     ReturnStmt(Expr),
     IfStmt(Box<Expr>, Box<Statement>, Option<Box<Statement>>),
-    BlockStmt(Vec<Statement>)
 }
 
 #[derive(Debug)]
 pub enum Decleration {
-    FunctionDecl(String, Vec<String>, Box<Statement>),
+    FunctionDecl(String, Vec<Expr>, Box<Statement>),
     VariableDecl(String, Option<Expr>)
 }
 

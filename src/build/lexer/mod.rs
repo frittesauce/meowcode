@@ -105,6 +105,12 @@ impl Lexer {
             '-' => {
                 tok = token::Token::Minus;
             }
+            '/' => {
+                tok = token::Token::Slash
+            }
+            '*' => {
+                tok = token::Token::Star
+            }
             '!' => {
                 tok = token::Token::Bang;
             }
