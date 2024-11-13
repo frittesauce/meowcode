@@ -2,12 +2,12 @@
 pub enum Expr {
     Integer(String),
     String(String),
-    
-    BinaryOp(Box<Expr>, BinaryOperator, Box<Expr>),
+    Identify(String),
 
+    BinaryOp(Box<Expr>, BinaryOperator, Box<Expr>),
     UnaryOp(Box<Expr>, UnaryOperator, Box<Expr>),
 
-
+    Call(String, Vec<Expr>),
     
 }
 
@@ -30,10 +30,10 @@ pub enum UnaryOperator{
 pub enum Statement {
     AsigmentStmt(String, Expr),
     ReturnStmt(Expr),
-    IfStmt(Box<Expr>, Box<Statement>, Option<Box<Statement>>),
+    IfStmt(Box<Expr>, Vec<Statement>, Option<Vec<Statement>>),
     FunctionDecl(String, Vec<Statement>, Vec<Box<Statement>>),
     VariableDecl(String, Option<Expr>),
-    Call(String, Vec<Expr>),
+    ExprStm(Expr),
 }
 
 
