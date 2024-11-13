@@ -110,7 +110,10 @@ fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
 
                     match peek {
                         Token::OpenParamn => {
-                            statement = parser::ast::Statement::ExprStm(decl_call(parser, string.to_string()));
+                            statement = parser::ast::Statement::ExprStm(decl_call(
+                                parser,
+                                string.to_string(),
+                            ));
                         }
                         Token::Equals => {
                             parser.read_token();
@@ -199,17 +202,15 @@ fn decl_expr(parser: &mut parser::Parser) -> parser::ast::Expr {
         Token::Int(int) => {
             first_expr = parser::ast::Expr::Integer(int);
         }
-        Token::Identifier(string) => {
-            match peek {
-                Token::OpenParamn => {
-                    parser.read_token();
-                    first_expr = decl_call(parser, string);
-                }
-                _ => {
-                    first_expr = parser::ast::Expr::Identify(string);
-                }
-            } 
-        }
+        Token::Identifier(string) => match peek {
+            Token::OpenParamn => {
+                parser.read_token();
+                first_expr = decl_call(parser, string);
+            }
+            _ => {
+                first_expr = parser::ast::Expr::Identify(string);
+            }
+        },
         Token::SemiColon => {
             first_expr = parser::ast::Expr::String("woof".to_string());
             println!("test")
@@ -226,40 +227,55 @@ fn decl_expr(parser: &mut parser::Parser) -> parser::ast::Expr {
         Token::Plus => {
             parser.read_token();
             second_expr = decl_expr(parser);
-            expr = parser::ast::Expr::BinaryOp(Box::new(first_expr), parser::ast::BinaryOperator::Add, Box::new(second_expr));
+            expr = parser::ast::Expr::BinaryOp(
+                Box::new(first_expr),
+                parser::ast::BinaryOperator::Add,
+                Box::new(second_expr),
+            );
         }
         Token::Minus => {
             parser.read_token();
             second_expr = decl_expr(parser);
-            expr = parser::ast::Expr::BinaryOp(Box::new(first_expr), parser::ast::BinaryOperator::Subtract, Box::new(second_expr));
+            expr = parser::ast::Expr::BinaryOp(
+                Box::new(first_expr),
+                parser::ast::BinaryOperator::Subtract,
+                Box::new(second_expr),
+            );
         }
         Token::Star => {
             parser.read_token();
             second_expr = decl_expr(parser);
-            expr = parser::ast::Expr::BinaryOp(Box::new(first_expr), parser::ast::BinaryOperator::Multiply, Box::new(second_expr));
+            expr = parser::ast::Expr::BinaryOp(
+                Box::new(first_expr),
+                parser::ast::BinaryOperator::Multiply,
+                Box::new(second_expr),
+            );
         }
         Token::Slash => {
             parser.read_token();
             second_expr = decl_expr(parser);
-            expr = parser::ast::Expr::BinaryOp(Box::new(first_expr), parser::ast::BinaryOperator::Divide, Box::new(second_expr));
+            expr = parser::ast::Expr::BinaryOp(
+                Box::new(first_expr),
+                parser::ast::BinaryOperator::Divide,
+                Box::new(second_expr),
+            );
         }
         Token::Equals => {
             parser.read_token();
             parser.read_token();
             second_expr = decl_expr(parser);
-            expr = parser::ast::Expr::BinaryOp(Box::new(first_expr), parser::ast::BinaryOperator::Equals, Box::new(second_expr));
+            expr = parser::ast::Expr::BinaryOp(
+                Box::new(first_expr),
+                parser::ast::BinaryOperator::Equals,
+                Box::new(second_expr),
+            );
         }
         _ => {
             expr = first_expr;
         }
     }
-    
     return expr;
 }
-
-//fn decl_statement(parser: &mut parser::Parser) -> parser::ast::Statement {
-//    println!("woof")
-//}
 
 fn decl_var(parser: &mut parser::Parser) -> parser::ast::Statement {
     let mut token = parser.read_token();
