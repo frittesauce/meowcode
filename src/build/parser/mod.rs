@@ -10,7 +10,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(token_vec: Vec<Token>) -> Self {
-        println!("Parsing code with tokens: \n {:#? \n}", token_vec);
+        // println!("Parsing code with tokens: \n {:#? \n}", token_vec);
         Self {
             tokens: token_vec.into_iter().peekable(),
         }
@@ -21,6 +21,8 @@ impl Parser {
     }
 
     pub fn read_token(&mut self) -> Token{
-        self.tokens.next().unwrap()
+        let token = self.tokens.next().unwrap();
+       //  println!("{:?}", token);
+        return token
     }
 }

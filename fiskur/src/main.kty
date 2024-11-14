@@ -7,9 +7,19 @@ fn main(test) {
     chirp("Hello World", "woof");
 
 
-    if (meow = woof) {
+    if meow == woof {
         chirp(false);
     } else {
         chirp("skibidi skiidi on the wall whos the skibidies of them all");
+        if 1 == 1 {
+            woof = 21;
+            meow = 12;
+        } else {
+            woof = false;
+        }
     }
+}
+
+fn chirp(first, second) {
+    let woof = first;
 }

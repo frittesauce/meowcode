@@ -4,7 +4,7 @@ mod parser;
 use core::panic;
 use lexer::token::Token;
 use parser::{ast::Statement, Parser};
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, vec};
 
 pub fn build() {
     println!("building...");
@@ -31,6 +31,8 @@ pub fn build() {
     start = std::time::Instant::now();
 
     let mut p = parser::Parser::new(tokens);
+    let program: parser::ast::Program;
+    let mut program_statements: Vec<parser::ast::Statement> = vec![];
 
     loop {
         let token = p.read_token();
@@ -39,8 +41,8 @@ pub fn build() {
                 break;
             }
             Token::Function => {
-                let skibidi = decl_function(&mut p);
-                println!("{:#?}", skibidi)
+                let function = decl_function(&mut p);
+                program_statements.push(function);
             }
             _ => {
                 //    println!("meow");
@@ -51,6 +53,8 @@ pub fn build() {
 
     let par_duration = start.elapsed();
     println!("finished parsing in: {:?}!", par_duration);
+    program = parser::ast::Program::Statements(program_statements);
+    println!("{:#?}", program)
 }
 
 fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
@@ -77,79 +81,50 @@ fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
     let mut params: Vec<parser::ast::Statement> = vec![];
 
     loop {
-        if cur_token != Token::CloseParamn {
             match cur_token {
                 Token::Identifier(string) => {
                     params.push(parser::ast::Statement::VariableDecl(string, None));
                     cur_token = parser.read_token();
+                    match cur_token {
+                        Token::Comma => {
+                            cur_token = parser.read_token();
+                        }
+                        Token::CloseParamn => {
+                            cur_token = parser.read_token();
+                            break;
+                        }
+                        _ =>{
+                            panic!("params arent seperated by comma!");
+                            break;
+                        } 
+                    }
                 }
                 _ => {
                     panic!("a param isnt valid");
                 }
-            }
-        } else {
-            parser.read_token();
-            break;
-        }
+            }   
     }
 
     let mut statements: Vec<Box<parser::ast::Statement>> = vec![];
-    cur_token = parser.read_token();
 
     loop {
         if cur_token != Token::EndScope {
-            match &cur_token {
-                Token::Let => {
-                    let statement = decl_var(parser);
-                    statements.push(Box::new(statement));
-                    cur_token = parser.read_token();
-                }
-                Token::Identifier(string) => {
-                    let peek = parser.peek();
-                    let statement;
+            let statement = decl_stmt(parser);
+            statements.push(Box::new(statement));
 
-                    match peek {
-                        Token::OpenParamn => {
-                            statement = parser::ast::Statement::ExprStm(decl_call(
-                                parser,
-                                string.to_string(),
-                            ));
-                        }
-                        Token::Equals => {
-                            parser.read_token();
-                            let expr = decl_expr(parser);
-                            let name: String = string.to_string();
-                            statement = parser::ast::Statement::AsigmentStmt(name, expr);
-                        }
-                        _ => {
-                            panic!("variable or call invalid {:?}", string)
-                        }
-                    }
-                    statements.push(Box::new(statement));
-                    cur_token = parser.read_token();
-                }
-                Token::SemiColon => {
-                    cur_token = parser.read_token();
-                }
-                Token::If => {
-                    decl_if(parser);
-                }
-                _ => {
-                    println!("syntax error somewer?! {:?}", cur_token);
-                    cur_token = parser.read_token();
-                }
-            }
-            if cur_token != Token::SemiColon {
+            cur_token = parser.read_token();
+            let peek = parser.peek();
+            if cur_token == Token::EndScope {
+            } else if cur_token != Token::SemiColon {
                 println!(
                     "stupid stupid supid forgot semicolon {:?} statements {:#?}",
                     cur_token, statements
                 );
-                cur_token = parser.read_token();
-            } else {
-                cur_token = parser.read_token();
+            }
+            if peek == &Token::EndScope {
+                break;
             }
         } else {
-            parser.read_token();
             break;
         }
     }
@@ -157,12 +132,112 @@ fn decl_function(parser: &mut parser::Parser) -> parser::ast::Statement {
     return parser::ast::Statement::FunctionDecl(fn_name, params, statements);
 }
 
+fn decl_stmt(parser: &mut parser::Parser) -> parser::ast::Statement {
+    let cur_token = parser.read_token();
+    match &cur_token {
+        Token::Let => {
+            let statement = decl_var(parser);
+            return statement;
+        }
+        Token::Identifier(string) => {
+            let peek = parser.peek();
+            let statement;
+
+            match peek {
+                Token::OpenParamn => {
+                    statement =
+                        parser::ast::Statement::ExprStm(decl_call(parser, string.to_string()));
+                }
+                Token::Equals => {
+                    parser.read_token();
+                    let expr = decl_expr(parser);
+                    let name: String = string.to_string();
+                    statement = parser::ast::Statement::AsigmentStmt(name, expr);
+                }
+                _ => {
+                    panic!("variable or call invalid {:?}", string)
+                }
+            }
+            return statement;
+        }
+        Token::If => {
+            let statement = decl_if(parser);
+            return statement;
+        }
+        _ => {
+            panic!("syntax error somewer?! {:?}", cur_token);
+        }
+    }
+}
+
 fn decl_if(parser: &mut parser::Parser) -> parser::ast::Statement {
     let condition: Box<parser::ast::Expr>;
-    let statements: Vec<parser::ast::Statement>;
-    let else_statements: Option<Vec<parser::ast::Statement>>;
+    let mut statements: Vec<Box<parser::ast::Statement>> = vec![];
+    let mut else_statements: Vec<Box<parser::ast::Statement>> = vec![];
 
-    return parser::ast::Statement::IfStmt(condition, statements, else_statements);
+    condition = Box::new(decl_expr(parser));
+    let mut peek = parser.peek();
+    let mut token = parser.read_token();
+    if token != Token::StartScope {
+        panic!("if statement doesnt start");
+    }
+    loop {
+        if token != Token::EndScope {
+            let statement = decl_stmt(parser);
+            statements.push(Box::new(statement));
+
+            token = parser.read_token();
+            peek = parser.peek();
+            if token != Token::SemiColon && token != Token::EndScope {
+                println!(
+                    "stupid stupid supid forgot semicolon {:?} statements {:#?}",
+                    token, statements
+                );
+            }
+            if peek == &Token::EndScope {
+                parser.read_token();
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    peek = parser.peek();
+    if peek == &Token::Else {
+        parser.read_token();
+        token = parser.read_token();
+
+        if token != Token::StartScope {
+            panic!("else statement doesnt start");
+        }
+        loop {
+            if token != Token::EndScope {
+                let statement = decl_stmt(parser);
+                else_statements.push(Box::new(statement));
+
+                token = parser.read_token();
+                peek = parser.peek();
+                if token != Token::SemiColon && token != Token::EndScope {
+                    println!(
+                        "stupid stupid supid forgot semicolon {:?} statements {:#?}",
+                        token, statements
+                    );
+                }
+                if peek == &Token::EndScope {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+
+    if else_statements.len() > 0 {
+        return parser::ast::Statement::IfStmt(condition, statements, Some(else_statements));
+    } else {
+        return parser::ast::Statement::IfStmt(condition, statements, None);
+    }
 }
 
 fn decl_call(parser: &mut parser::Parser, string: String) -> parser::ast::Expr {
@@ -193,14 +268,18 @@ fn decl_expr(parser: &mut parser::Parser) -> parser::ast::Expr {
     let second_expr: parser::ast::Expr;
     let expr: parser::ast::Expr;
 
-    println!("ignore {:?}", token);
-
     match token {
         Token::String(string) => {
             first_expr = parser::ast::Expr::String(string);
         }
         Token::Int(int) => {
             first_expr = parser::ast::Expr::Integer(int);
+        }
+        Token::False => {
+            first_expr = parser::ast::Expr::False;
+        }
+        Token::True => {
+            first_expr = parser::ast::Expr::True;
         }
         Token::Identifier(string) => match peek {
             Token::OpenParamn => {
@@ -213,7 +292,6 @@ fn decl_expr(parser: &mut parser::Parser) -> parser::ast::Expr {
         },
         Token::SemiColon => {
             first_expr = parser::ast::Expr::String("woof".to_string());
-            println!("test")
         }
         _ => {
             panic!("expressions are wrong somewhere {:?}, {:?}", token, peek)
@@ -221,7 +299,6 @@ fn decl_expr(parser: &mut parser::Parser) -> parser::ast::Expr {
     }
 
     peek = parser.peek();
-    println!("{:?}", peek);
 
     match peek {
         Token::Plus => {
@@ -262,13 +339,21 @@ fn decl_expr(parser: &mut parser::Parser) -> parser::ast::Expr {
         }
         Token::Equals => {
             parser.read_token();
-            parser.read_token();
-            second_expr = decl_expr(parser);
-            expr = parser::ast::Expr::BinaryOp(
-                Box::new(first_expr),
-                parser::ast::BinaryOperator::Equals,
-                Box::new(second_expr),
-            );
+            peek = parser.peek();
+            match peek {
+                Token::Equals => {
+                    parser.read_token();
+                    second_expr = decl_expr(parser);
+                    expr = parser::ast::Expr::BinaryOp(
+                        Box::new(first_expr),
+                        parser::ast::BinaryOperator::Equals,
+                        Box::new(second_expr),
+                    );
+                }
+                _ => {
+                    panic!("invalid condition!");
+                }
+            }
         }
         _ => {
             expr = first_expr;
